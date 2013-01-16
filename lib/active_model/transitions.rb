@@ -30,10 +30,10 @@ module ActiveModel
       validates_presence_of :state
       validate :state_inclusion
     end
-    
+
     # The optional options argument is passed to find when reloading so you may
-    # do e.g. record.reload(:lock => true) to reload the same record with an
-    # exclusive row lock. 
+    # do e.g. record.reload(lock: true) to reload the same record with an
+    # exclusive row lock.
     def reload(options = nil)
       super.tap do
         sm = self.class.get_state_machine
@@ -51,7 +51,7 @@ module ActiveModel
       write_state_without_persistence(prev_state)
       raise
     end
-    
+
     def write_state_without_persistence(state)
       ivar = self.class.get_state_machine.current_state_variable
       instance_variable_set(ivar, state)
@@ -59,16 +59,16 @@ module ActiveModel
     end
 
     def read_state
-      self.state && self.state.to_sym
+      state && state.to_sym
     end
 
     def set_initial_state
-      self.state ||= self.class.get_state_machine.initial_state.to_s if self.has_attribute?(:state)
+      self.state ||= self.class.get_state_machine.initial_state.to_s if has_attribute?(:state)
     end
 
     def state_inclusion
-      unless self.class.get_state_machine.states.map{|s| s.name.to_s }.include?(self.state.to_s)
-        self.errors.add(:state, :inclusion, :value => self.state)
+      unless self.class.get_state_machine.states.detect{|s| s.name.to_s == state.to_s }
+        self.errors.add(:state, :inclusion, value: state)
       end
     end
   end
